@@ -22,8 +22,8 @@ body {
 }
 
 .app {
-  width: 70%;
-  height: 100%;
+  width: 80%;
+  height: 150vh;
   margin: auto;
   display: grid;
   grid-template-rows: auto auto 1fr auto;

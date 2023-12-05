@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import './style.css'
 
 function Header()
@@ -7,34 +8,51 @@ function Header()
     return <h1>Catatan Belanjaku 📝</h1>
 }
 
-function Form()
+function Form({onAddItem}:any)
 {
+
+    const quantityNum = [...Array(20)].map((_, i) => 
+    (
+        <option value={i+1} key={i+1}>{i+1}</option>
+    ) );
+
+    const [name, setName] = useState('');
+    const [quantity, setQuantity] = useState(1);
+
+    function handleSubmit(e:any){
+        e.preventDefault();
+        // alert(name + '' + quantity);
+        if(!name) return;
+
+        const newItemm = {name, quantity, checked: false, id: Date.now()};
+        onAddItem(newItemm)
+        console.log(newItemm);
+        setName('');
+        setQuantity(1);
+    }
+
     return(
-        <form className='add-form'>
+        <form className='add-form' onSubmit={handleSubmit}>
         <h3>Hari ini belanja apa kita?</h3>
         <div>
-            <select>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
+            <select value={quantity} onChange={(e:any) => setQuantity(Number(e.target.value))}>
+           {quantityNum}
             </select>
-            <input type="text" placeholder="nama barang..." />
+            <input type="text" placeholder="nama barang..." value={name} onChange={(e)=>setName(e.target.value)} />
         </div>
         <button>Tambah</button>
     </form>
     )
 }
 
-function Grocery()
+function Grocery({items, onDeleteItem, onToggleItem, onClearItems}:any)
 {
     return(
         <>
         <div className='list'>
                     <ul>
-                        {GroceryItems.map((item) => (
-                        <Item item={item} key={item.id}/>
+                        {items.map((item:any) => (
+                        <Item item={item} key={item.id} onDeleteItem={onDeleteItem} onToggleItem={onToggleItem}/>
                         )) }
                     </ul>
                 </div>
@@ -44,19 +62,19 @@ function Grocery()
                         <option value="name">Urutkan berdasarkan nama barang</option>
                         <option value="checked">Urutkan berdasarkan ceklis</option>
                     </select>
-                    <button>Bersihkan Daftar</button>
+                    <button onClick={onClearItems}>Bersihkan Daftar</button>
                 </div>
         </>
     )
 }
 
-function Item({ item })
+function Item({ item, onDeleteItem, onToggleItem }:any)
 {
     return(
         <li key={item.id}>
-                            <input type="checkbox" />
+                            <input type="checkbox" checked={item.checked} onChange={() => onToggleItem(item.id)} />
                             <span style={item.checked ? { textDecoration: 'line-through' } : {}}>{item.quantity} {item.name}</span>
-                            <button>&times;</button>
+                            <button onClick={() => onDeleteItem(item.id)}>&times;</button>
                         </li>
     )
 }
@@ -89,13 +107,31 @@ const GroceryItems = [
 
 export default function App()
 {
+    const [items, setItems] = useState(GroceryItems);
+
+    function handleAddItem(item:any){
+        setItems([...items, item])
+    }
+
+    function handleDeleteItem(id:any){
+        setItems((items) => items.filter((item) => item.id !== id));
+    }
+
+    function handleToggleItem(id:any){
+        setItems((items) => items.map((item) => item.id === id ? {...item, checked: !item.checked} : item));
+    }
+
+    function handleClearItems(){
+        setItems([]);
+    }
+
     return(
         <main>
             <div className='app'>
                 <Header />
-                <Form />
-                <Grocery />
-                <Footer />
+                <Form onAddItem={handleAddItem}  />
+                <Grocery items={items}  onDeleteItem={handleDeleteItem} onToggleItem={handleToggleItem} onClearItems={handleClearItems}/>
+                <Footer/>
              </div>
         </main>
     )
